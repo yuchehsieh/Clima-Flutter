@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../services/location.dart';
+import '../services/networking.dart';
+import 'location_screen.dart';
+
+const apiKey = 'ad2eb54e50437d2aab55a1cd9113f1e6';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -10,53 +13,50 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  double latitude;
+  double longitude;
+
   @override
   void initState() {
     super.initState();
 
-    getLocation();
+    getLocationData();
   }
 
-  void getLocation() async {
+  Future<void> getLocationData() async {
     Location location = Location();
     await location.getCurrentLocation();
 
-    final http.Response response = await http.get(
-        'https://samples.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid=b6907d289e10d714a6e88b30761fae22');
+    longitude = location.longitude;
+    latitude = location.latitude;
 
-    int conditionNumber;
-    double temperature;
-    String cityName;
+    NetworkHelper networkHelper = NetworkHelper(
+      'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey',
+    );
 
-    if (response.statusCode == 200) {
-      /// json.decode(source) == jsonDecode(source)
+    final decodedData = await networkHelper.getData();
 
-      final decodedData = jsonDecode(response.body);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LocationScreen(),
+      ),
+    );
 
-      conditionNumber = decodedData['weather'][0]['id'];
-      temperature = decodedData['main']['temp'];
-      cityName = decodedData['name'];
+//    await whenPop;
+//    getLocationData();
 
-      print(conditionNumber);
-      print(temperature);
-      print(cityName);
-    } else {
-      print(response.statusCode);
-    }
-
-//    print(location.latitude);
-//    print(location.longitude);
+//    int conditionNumber = decodedData['weather'][0]['id'];
+//    double temperature = decodedData['main']['temp'];
+//    String cityName = decodedData['name'];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            getLocation();
-          },
-          child: Text('Get Location'),
+        child: SpinKitDoubleBounce(
+          color: Colors.white,
+          size: 50.0,
         ),
       ),
     );
