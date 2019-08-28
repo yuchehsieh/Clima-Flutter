@@ -13,7 +13,7 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  WeatherModel weather = WeatherModel();
+  WeatherModel weatherModel = WeatherModel();
   int temperature;
   String weatherIcon;
   String cityName;
@@ -22,18 +22,25 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   void initState() {
     super.initState();
-    updateUI();
+    updateUI(widget.weatherData);
   }
 
-  void updateUI() {
+  void updateUI(weatherData) {
     setState(() {
-      double temp = widget.weatherData['main']['temp'];
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = 'Error';
+        weatherMessage = 'Unable to get weather data.';
+        cityName = '';
+        return;
+      }
+      double temp = weatherData['main']['temp'];
       temperature = temp.round();
-      weatherMessage = weather.getMessage(temperature);
-      int conditionNumber = widget.weatherData['weather'][0]['id'];
-      weatherIcon = weather.getWeatherIcon(conditionNumber);
+      weatherMessage = weatherModel.getMessage(temperature);
+      int conditionNumber = weatherData['weather'][0]['id'];
+      weatherIcon = weatherModel.getWeatherIcon(conditionNumber);
 
-      cityName = widget.weatherData['name'];
+      cityName = weatherData['name'];
     });
   }
 
@@ -59,7 +66,11 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final dynamic weatherData =
+                          await weatherModel.getLocationWeather();
+                      updateUI(weatherData);
+                    },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
