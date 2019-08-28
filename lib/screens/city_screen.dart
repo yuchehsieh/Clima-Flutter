@@ -60,7 +60,9 @@ class _CityScreenState extends State<CityScreen> {
                     ),
                   ),
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pop(_cityName);
+                    },
                     child: Text(
                       'Get Weather',
                       style: kButtonTextStyle,
